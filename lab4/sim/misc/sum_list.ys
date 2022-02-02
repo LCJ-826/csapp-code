@@ -1,0 +1,43 @@
+# Execution begins at address 0 
+    .pos 0
+    irmovq stack, %rsp  	# Set up stack pointer
+    call main		# Execute main program
+    halt			# Terminate program 
+	
+# 内存区域，存放数据/链表之类
+# Sample linked list
+.align 8
+ele1:
+    .quad 0x00a
+    .quad ele2
+ele2:
+    .quad 0x0b0
+    .quad ele3
+ele3:
+    .quad 0xc00
+    .quad 0
+# END
+
+main:
+  irmovq ele1, %rdi #将链表的第一个元素ele1作为输入
+  call sum_list
+  ret
+
+sum_list:
+  pushq %rbx  #%rbx为被调用者保存寄存器，后面有用到该寄存器，所以需要先压入栈中
+  xorq %rax, %rax #用%rax保存val值，首先置零
+  jmp test
+loop:
+  mrmovq (%rdi), %rbx #将链节点中的val保存到%rbx中
+  addq %rbx, %rax
+  mrmovq 8(%rdi), %rdi #将当前指向链节点val地址的%rdi增加8字节，指向了保存下一个链节点地址的地址，再访问内存，得到下一个节点的地址
+test:
+  andq %rdi,%rdi #对输入链节点进行判断
+  jne loop #如果链节点是非零的，就进入循环loop
+  popq %rbx
+  ret
+
+  .pos 0x200 #设置栈地址
+stack:
+	.pos 0x200
+stack:
